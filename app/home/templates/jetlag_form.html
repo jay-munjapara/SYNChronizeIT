@@ -1,0 +1,251 @@
+{% extends 'layouts/base.html' %} {% block title %} Dashboard {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %} {% block content %}
+<link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    
+    body {
+        background-color: #f1f1f1;
+    }
+    
+    #regForm {
+        background-color: #ffffff;
+        margin: 10px auto;
+        font-family: Raleway;
+        padding: 40px;
+        width: 70%;
+        min-width: 300px;
+    }
+    
+    h1 {
+        text-align: center;
+    }
+    
+    input {
+        padding: 10px;
+        width: 100%;
+        font-size: 17px;
+        font-family: Raleway;
+        border: 1px solid #aaaaaa;
+        border-radius: 0.25rem;
+    }
+    /* Mark input boxes that gets an error on validation: */
+    
+    input.invalid {
+        background-color: #ffdddd;
+    }
+    /* Hide all steps by default: */
+    
+    .tab {
+        display: none;
+    }
+    
+    button {
+        /* background-color: #F2BE34; */
+        background-image: linear-gradient(310deg, #FC9600, #F2BE34);
+        color: #ffffff;
+        border: none;
+        border-radius: 0.25rem;
+        padding: 10px 20px;
+        font-size: 17px;
+        font-family: Raleway;
+        cursor: pointer;
+    }
+    
+    button:hover {
+        opacity: 0.8;
+    }
+    
+    #prevBtn {
+        background-color: #bbbbbb;
+    }
+    /* Make circles that indicate the steps of the form: */
+    
+    .step {
+        height: 15px;
+        width: 15px;
+        margin: 0 2px;
+        background-color: #bbbbbb;
+        border: none;
+        border-radius: 50%;
+        display: inline-block;
+        opacity: 0.5;
+    }
+    
+    .step.active {
+        opacity: 1;
+    }
+    /* Mark the steps that are finished and valid: */
+    
+    .step.finish {
+        background-color: #FC9600;
+    }
+</style>
+<style>
+    #disclaimer {
+        width: 100%;
+        padding: 50px 0;
+        text-align: center;
+        background-color: lightblue;
+        margin-top: 20px;
+        display: none;
+        z-index: 2;
+    }
+</style>
+<style>
+    * {
+        box-sizing: border-box
+    }
+    
+    body {
+        font-family: "Lato", sans-serif;
+    }
+    /* Style the tab */
+    
+    .tab {
+        float: left;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+        width: 30%;
+        height: 300px;
+    }
+    /* Style the buttons inside the tab */
+    
+    .tab button {
+        display: block;
+        background-color: inherit;
+        color: black;
+        padding: 22px 16px;
+        width: 100%;
+        border: none;
+        outline: none;
+        text-align: left;
+        cursor: pointer;
+        font-size: 17px;
+    }
+    /* Change background color of buttons on hover */
+    
+    .tab button:hover {
+        background-color: #ddd;
+    }
+    /* Create an active/current "tab button" class */
+    
+    .tab button.active {
+        background-color: #ccc;
+    }
+    /* Style the tab content */
+    
+    .tabcontent {
+        float: left;
+        padding: 0px 12px;
+        border: 1px solid #ccc;
+        width: 70%;
+        border: none;
+        height: 300px;
+        display: none;
+    }
+    /* Clear floats after the tab */
+    
+    .clearfix::after {
+        content: "";
+        clear: both;
+        display: table;
+    }
+</style>
+<link rel="stylesheet" href="/static/assets/css/main.min.css">
+
+<div class="container-fluid py-4">
+    <section class="intro-section">
+        <div class="container">
+            <div class="intro-holder">
+                <div class="intro-heading">
+                    <h1 class="hideme">Jet Lag Calculator</h1>
+                    <h2 class="title">
+                        <span class="text-light">Switching Time Zones</span>
+                        <span class="text-bold"><span
+                    class="inner-text">The Jet Lag</span> <span class="inner-text">Calculator</span></span>
+                    </h2>
+                </div>
+                <!-- <div class="intro-info">
+              <p>It isn’t always easy to recover when you’re switching time zones - the inability to sleep, fatigue and
+                disorientation that comes with jet lag can put a serious dampener on your time away. Using your flight
+                itinerary, you can now manage jet lag with this interactive calculator.</p>
+              <p>Enter your travel details below and find out how to get the most out of your trip.</p>
+            </div> -->
+                <form action="{{ url_for('home_blueprint.schdl_create') }}" method="POST" class="calculator-holder">
+                    <div class="top-block"> <span class="subtitle">Fill through your details:</span>
+                        <div class="input-holder"> <span class="subtitle">Sleep time</span>
+                            <input class="time" type="time" name="bed_at" title="Sleep time" required="required" value="23:00" id="sleep">
+                        </div>
+                        <div class="input-holder"> <span class="subtitle">Wake time</span>
+                            <input class="time" type="time" name="wake_at" title="Wake time" required="required" value="07:00" id="sleep">
+                        </div>
+                    </div>
+                    <div class="delimiter-block"><span></span></div>
+                    <div class="bottom-block">
+                        <div class="departing-block"> <span class="subtitle">Departure from origin</span>
+                            <div class="flight-info">
+                                <div class="input-holder autocomplete-holder">
+                                    <input list="airports" name="airport_from" placeholder="Departure city" id="airport_from">
+                                    <datalist id="airports">
+                            {% for line in reader %}
+                            <option value="{{ line[0] }}, {{ line[1] }}">
+                                {% endfor %}
+                        </datalist>
+                                </div>
+                                <div class="input-holder sm">
+                                    <input class="date" type="date" name="departing_on_date" title="Departure date (in departure time zone)" required="required" value="2020-01-24" id="depdate"></div>
+                                <div class="input-holder sm">
+                                    <input class="time" type="time" name="departing_on_time" title="Departure time (in departure time zone)" required="required" value="12:00" id="deptime">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arriving-block"> <span class="subtitle">Arrival time at destination</span>
+                            <div class="flight-info">
+                                <div class="input-holder autocomplete-holder">
+                                    <input list="airports" name="airport_to" placeholder="Arrival city" id="airport_to">
+                                    <datalist id="airports">
+                            {% for line in reader %}
+                            <option value="{{ line[0] }}, {{ line[1] }}">
+                                {% endfor %}
+                        </datalist>
+                                </div>
+                                <div class="input-holder sm">
+                                    <input class="date" type="date" name="arriving_on_date" title="Arrival date (in arrival time zone)" required="required" value="2020-01-24" id="arrdate">
+                                </div>
+                                <div class="input-holder sm">
+                                    <input class="time" type="time" name="arriving_on_time" title="Arrival time (in arrival time zone)" required="required" value="14:00" id="arrtime">
+                                </div>
+                            </div>
+                            <div class="btn-holder">
+                                <button class="btn btn-calc btn-primary" type="submit">Get Plan</button>
+                            </div>
+                        </div>
+                        <div class="error-message incorrect-city-name"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="intro-bg" style="height: 450px;"></div>
+    </section>
+
+
+
+    {% include "includes/footer.html " %}
+
+</div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+
+<script src="/static/assets/js/plugins/chartjs.min.js "></script>
+<script src="/static/assets/js/plugins/Chart.extension.js "></script>
+
+
+{% endblock javascripts %}
